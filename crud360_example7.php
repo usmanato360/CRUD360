@@ -28,7 +28,7 @@ include_once("crud360/inc/header.php");
 <div class="container">
 <?php Crud360::defaultDivs(); ?>
 <h3 align="center"> <strong>Example 1:</strong> Format fields to suit your needs</h3>
-<p align="center"> There are 4 types of formats currently supported, Image, Video, Link , Date & HexColor, please review code carefully to understand how it works!</p>
+<p align="center"> There are 5 types of formats currently supported, Image, Video, Link , Date & HexColor, please review code carefully to understand how it works!</p>
 <?php 		
        // this method must be called within a renderable region of an html page, it displays records, creates neccessary forms etc...
 		$users->magic();	
