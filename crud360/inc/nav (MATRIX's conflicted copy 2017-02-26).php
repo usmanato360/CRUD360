@@ -26,10 +26,16 @@
 <div class="container">
   <button class="navbar-toggler hidden-lg-up" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"></button>
   <div class="collapse navbar-toggleable-md" id="navbarResponsive">
-    <a class="navbar-brand" href="index.php"><strong style="color:#0068C9">Crud360</strong></a>
+    <a class="navbar-brand" href="index.php"><strong style="color:#0068C9"><?=Config::$appTextLogo?></strong></a>
     <ul class="nav navbar-nav">
       <li class="nav-item active">
         <a class="nav-link" href="index.php">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="getting_started.php">Getting Started!</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" href="install/easy.php">Easy Setup</a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="responsiveNavbarDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Examples</a>
@@ -43,18 +49,16 @@
           <a class="dropdown-item" href="crud360_example7.php">Example 7</a>          
           <a class="dropdown-item" href="crud360_example8.php">Example 8</a>          
           <a class="dropdown-item" href="crud360_example9.php">Example 9</a>          
-
-
         </div>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="index.php?lic=true">License Agreement</a>
+        <a class="nav-link" target="_blank" href="license.php">License Agreement</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="http://orbit360.net/crud360">Project Home</a>
+        <a class="nav-link" target="_blank" href="http://orbit360.net/crud360">Project Home</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="http://orbit360.net/crud360/forum/">Forum</a>
+        <a class="nav-link" target="_blank" href="http://orbit360.net/crud360/forum/">Forum</a>
       </li>
 
     </ul>
@@ -78,7 +82,6 @@
 		text-decoration:none
 	}
 </style>
-
 <?php 
 $page = explode("/",($_SERVER['PHP_SELF']));
 $page = $page[count($page)-1];

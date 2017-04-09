@@ -134,7 +134,7 @@ class Crud360 {
 	private $maxRecords;	
 	private $guessTitle;	
 	private $allColumns;	
-
+	private $xsField;	
 	private $tableHeader;	
 	private $search;	
 	private $paginationLinks;	
@@ -144,6 +144,8 @@ class Crud360 {
 
 	private static $generatePkAutoIncKey = true; // ITS A DML COMMAND
 	private static $fieldOriginalTips = true;
+	private static $noDeleteButton = false;
+	private static $opWidth = "";
 	//Class variables
 	public static $crud360Get = "crud360_section";
 	public static $crud360PkGenGet = "crud360_gen_pk_inc";
@@ -173,7 +175,7 @@ class Crud360 {
 		$this->table = $table;
 		$this->submitName = $this->table."_submit";
 		$this->tableProcessIdentifier = md5(config::$dbName.$this->table);
-		$this->autoRequired = false;
+		$this->autoRequired = true;
 		$this->formHeading = true;
 		$this->recordHeading = false;
 		$this->recordSerial = false;
@@ -196,15 +198,11 @@ class Crud360 {
 		$this->sqlOrder = "desc";
 		$this->maxRecords = 10;	//default records per (records page)
 		$this->guessTitle = true;	
-
 		$this->tableHeader = true;	
 		$this->search = true;	
 		$this->addNew = true;	
-
 		$this->paginationLinks = true;	
 		$this->addButton = "";	
-
-
 		$sql ="describe $table";
 		$stmt = $DB->PDO->prepare($sql);
 		$stmt->execute();
@@ -311,10 +309,15 @@ class Crud360 {
 			$this->fields[$i]['CRUD360_LINKED_TABLE_ID']='';
 			$this->fields[$i]['CRUD360_LINKED_TABLE_TITLE']='';
 			$this->fields[$i]['CRUD360_LINKED_TABLE_WHERE']='';
+			$this->fields[$i]['CURD360_SOUNDS_LIKE_SEARCH']=true;			
+
+			$this->fields[$i]['CURD360_EQUAL_SEARCH']=false;			
+
 			$this->fields[$i]['CRUD360_LINKED_TABLE_WHERE_VALUES']='';
 			$this->fields[$i]['CRUD360_CLIP_TEXT']=false;
 			$this->fields[$i]['CRUD360_COLUMN_WIDTH']=false; //auto
 			$this->fields[$i]['CRUD360_INPUT_EXT']='';
+			$this->fields[$i]['CRUD360_IS_HTML']=false;
 			$this->fields[$i]['CRUD360_INPUT_VALUE_ARRAY']='';
 			$this->fields[$i]['CRUD360_RICH_TEXT']=false;
 			$this->fields[$i]['CRUD360_SHOW_LENGTH']=true;
@@ -443,6 +446,15 @@ class Crud360 {
 		$this->addNew=$value;
 	}
 	
+	public function opWidth($value="")
+	{
+		self::$opWidth=$value;
+	}
+	public function noDeleteButton($value=false)
+	{
+		self::$noDeleteButton=$value;
+	}
+
 	public function search($value=true)
 	{
 		$this->search = $value;
@@ -681,6 +693,40 @@ class Crud360 {
 			}
 		
 	}
+	public function html($field,$value = true)
+	{
+		
+			for($i=0;$i<$this->nof;$i++)
+			{
+					if($field == $this->fields[$i]['Field'])
+						$this->fields[$i]['CRUD360_IS_HTML']= $value;				
+			}
+		
+	}
+	public function soundsLikeSearch($field,$value = true)
+	{
+		
+			for($i=0;$i<$this->nof;$i++)
+			{
+					if($field == $this->fields[$i]['Field'])
+						$this->fields[$i]['CURD360_SOUNDS_LIKE_SEARCH']= $value;				
+			}
+		
+	}
+
+	public function equalSearch($field,$value = true)
+	{
+		
+			for($i=0;$i<$this->nof;$i++)
+			{
+					if($field == $this->fields[$i]['Field'])
+						$this->fields[$i]['CURD360_EQUAL_SEARCH']= $value;				
+			}
+		
+	}
+
+
+
 	public function getTableName ()
 	{
 		return $this->table;
@@ -1676,14 +1722,15 @@ class Crud360 {
 								'advlist autolink lists link image charmap print preview hr anchor pagebreak',
 								'searchreplace wordcount visualblocks visualchars code fullscreen',
 								'insertdatetime media nonbreaking save table contextmenu directionality',
-								'emoticons template paste textcolor colorpicker textpattern imagetools codesample'
+								'emoticons template paste textcolor colorpicker textpattern imagetools codesample code'
 							],
 							content_css: [
 								'//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
 								'//www.tinymce.com/css/codepen.min.css'
 							],
+							menubar: 'tools',
 								toolbar1: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
-								toolbar2: 'print preview media | forecolor backcolor emoticons | codesample'
+								toolbar2: 'print preview media | forecolor backcolor emoticons | codesample code'
 							});";
 							}
 							
@@ -2361,15 +2408,24 @@ class Crud360 {
 			$title = ucwords(str_replace("_"," ",$table));
 		echo "<a style='display:block; margin-bottom:15px' class='$class' href='$href'>".$title."</a>";
 	}
-	public static function showAllLinks()
+	public static function showAllLinks($key_val=false)
 	{
 		$tables = self::allTables();
 		for($i=0;$i<self::numTables();$i++)
 		{
 			if(self::isBaseTable($tables[$i]))
 			{
-				$title = ucwords(str_replace("_"," ",$tables[$i]));
-				self::showSingleLink($tables[$i],$title);
+				if(!isset($key_val[$tables[$i]]))
+				{
+					$title = ucwords(str_replace("_"," ",$tables[$i]));
+				}
+				else
+				{	
+				
+					$title = ucwords(str_replace("_"," ",$key_val[$tables[$i]]));
+					
+				}
+					self::showSingleLink($tables[$i],$title);
 			}
 
 		}
@@ -2439,7 +2495,7 @@ class Crud360 {
 						$sql.=" $key=:$place, ";
 						//$desi_sql.=" `$key`='$val', ";
 						$ctype= $keyInfo['Type'];
-						if($ctype=='datetime')
+						if($ctype=='datetime' || $ctype=='timestamp')
 						{
 							$time = strtotime($val);
 							$val = date("Y-m-d h:i:s",$time);
@@ -2470,7 +2526,7 @@ class Crud360 {
 			}
 			catch (PDOException $e )
 			{
-				$this->lastMsg = "<div class='alert alert-danger'>Failed!</div>";
+				$this->lastMsg = "<div class='alert alert-danger'>Failed!".$e->getMessage()."</div>";
 				///echo 'false';
 				return false;
 			}
@@ -2566,7 +2622,9 @@ class Crud360 {
 							$request[$input_name] = $request[$input_name][count($request[$input_name])-1];
 						}
 						if($key=="PRI" && $Extra=="auto_increment")
-							$values[$this->fields[$i]['Field']] = "NULL";
+						{
+							$values[$this->fields[$i]['Field']] = NULL;
+						}
 						else
 							$values[$this->fields[$i]['Field']] = $request[$input_name];
 					}
@@ -3133,9 +3191,18 @@ class Crud360 {
 
 		$html_id = "";
 
+		
+
 		if($this->recordTpl=='' )	
 		{
 			echo "<table class='table'><tr>$rh";
+			$fno = 1;
+			for($i=0;$i<count($allow);$i++)
+			{
+				if($allow[$i]==$this->xsField)
+					$fno = $i;
+			}
+			
 			for($i=0;$i<count($allow);$i++)
 			{
 			
@@ -3148,13 +3215,25 @@ class Crud360 {
 				
 				//var_dump($attr);
 				$head = $attr['CRUD360_TITLE'];
-				if($i==1)
-					$hideclass='';
+				$xsField  = $this->xsField;
+				
+				
+				
+				if($i==$fno)
+				{
+					if($allow[$i]!=$this->primaryKey)
+						$hideclass='';
+				    else
+					$hideclass="class='hide-768'";	
+				}
 				else
 					$hideclass="class='hide-768'";	
+					
+				if($available==$fno)
+				$hideclass="";	
+	
 				
-				if($available==1)
-					$hideclass="";	
+				
 	
 				//var_dump($allow[$i]."|| ".$allow[$i][0]." = ".$head);
 				//var_dump($allow[$i],$attr['CRUD360_SUPRESS']);
@@ -3198,8 +3277,12 @@ class Crud360 {
 				}*/
 				//var_dump($rows);
 			}
+			if(self::$opWidth!="")
+				$opw = "width:".self::$opWidth;
+			else
+				$opw = "";
 			//var_dump($current_fields);
-			echo "<th style='text-align:right' class='operations'>Operations</th></tr>";
+			echo "<th style='text-align:right; $opw' class='operations'>Operations</th></tr>";
 			for($k =0;$k<count($rows);$k++)
 			{
 				$row = $rows[$k];
@@ -3280,10 +3363,12 @@ class Crud360 {
 					
 				$serial = $k+1;
 				echo "<td class='operations' align='right'>
-				<button data-toggle='$modal' data-target='#$html_id' data-records='records_".$this->tableProcessIdentifier."_div' data-tbl-title='".$this->tableTitle."' data-serial='$serial' data-tbl='".$this->tableProcessIdentifier."' data-qs='".$_SERVER['QUERY_STRING']."'  data-pk='$pk' data-id='".$row[$pk]."' class='btn btn-info  btn_$html_id'>View/Edit</button>
-				<button data-toggle='$modal' data-target='#$html_id' data-records='records_".$this->tableProcessIdentifier."_div' data-serial='$serial' data-tbl='".$this->tableProcessIdentifier."' data-pk='$pk'  data-qs='".$_SERVER['QUERY_STRING']."' data-id='".$row[$pk]."' class='btn btn-warning  btn_$html_id' data-tbl-title='".$this->tableTitle."' data-rowid='$row_html_id'>Delete</button>
+				<button data-toggle='$modal' data-target='#$html_id' data-records='records_".$this->tableProcessIdentifier."_div' data-tbl-title='".$this->tableTitle."' data-serial='$serial' data-tbl='".$this->tableProcessIdentifier."' data-qs='".$_SERVER['QUERY_STRING']."'  data-pk='$pk' data-id='".$row[$pk]."' class='btn btn-info  btn_$html_id'>View/Edit</button>";
 				
-				</td></tr>";
+				if(self::$noDeleteButton!=true)
+				{
+					echo "<button data-toggle='$modal' data-target='#$html_id' data-records='records_".$this->tableProcessIdentifier."_div' data-serial='$serial' data-tbl='".$this->tableProcessIdentifier."' data-pk='$pk'  data-qs='".$_SERVER['QUERY_STRING']."' data-id='".$row[$pk]."' class='btn btn-warning  btn_$html_id' data-tbl-title='".$this->tableTitle."' data-rowid='$row_html_id'>Delete</button>
+				</td></tr>";}
 				
 			}
 			echo "
@@ -3383,8 +3468,7 @@ class Crud360 {
 			echo "
 			</div>";
 	}
-	
-	
+		
 	public static function javascript($objects)
 	{
 		//var_dump($obejcts);

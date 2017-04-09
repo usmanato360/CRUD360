@@ -327,4 +327,8 @@ form-control:disabled, .form-control[readonly]
 .records-tpl div {
 
 }
+.paddbottom {
+	padding-bottom:15px;
+}
+
 

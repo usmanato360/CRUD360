@@ -204,7 +204,9 @@ $(window).resize(function(){
 
 
 
-
+$("body").on("keyup",".search-filter", function(e) {
+	$("body .pagination-trigger").trigger("click"); 
+});
 
 $("body").on("click",".pagination-trigger", function(e) {
 	var d_tbl = $(this).attr("data-tbl");

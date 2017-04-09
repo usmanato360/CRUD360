@@ -2,7 +2,7 @@
 class Config {
 	public static $dbHost = 'localhost';
 	public static $dbPassword = '';
-	public static $dbName = 'crud360';
+	public static $dbName = 'jq_main';
 	public static $dbUser ='root';
 	public static $dbCharset = 'utf8';
 	public static $pdoVerbose	=false; // show pdo errors
